@@ -22,6 +22,12 @@ void write_chunk(Chunk *chunk, uint8_t byte)
     chunk->count++;
 }
 
+int add_constant(Chunk *chunk, Value value)
+{
+    write_value_array(&chunk->constants, value);
+    return chunk->constants.count - 1;
+}
+
 void free_chunk(Chunk *chunk)
 {
     FREE_ARRAY(uint8_t, chunk->code, chunk->capacity);

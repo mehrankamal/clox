@@ -32,11 +32,12 @@ static InterpretResult run()
         case OP_CONSTANT:
         {
             Value constant = READ_CONSTANT();
-            print_value(constant);
-            printf("\n");
+            push(constant);
             break;
         }
         case OP_RETURN:
+            print_value(pop());
+            printf("\n");
             return INTERPRET_OK;
         }
     }

@@ -37,8 +37,26 @@ static InterpretResult run()
 #undef READ_CONSTANT
 }
 
+static void reset_stack()
+{
+    vm.stack_top = vm.stack;
+}
+
+void push(Value value)
+{
+    *vm.stack_top = value;
+    vm.stack_top++;
+}
+
+Value pop()
+{
+    vm.stack_top--;
+    return *vm.stack_top;
+}
+
 void init_vm()
 {
+    reset_stack();
 }
 
 void free_vm()

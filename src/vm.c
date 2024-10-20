@@ -3,6 +3,7 @@
 #include "common.h"
 #include "vm.h"
 #include "value.h"
+#include "debug.h"
 
 VM vm;
 
@@ -13,10 +14,15 @@ static InterpretResult run()
 
     for (;;)
     {
+#ifdef DEBUG_TRACE_EXECUTION
+        disassemble_instruction(vm.chunk, (int)(vm.ip - vm.chunk->code));
+#endif
+
         uint8_t instruction;
         switch (instruction = READ_BYTE())
         {
-        case OP_CONSTANT: {
+        case OP_CONSTANT:
+        {
             Value constant = READ_CONSTANT();
             print_value(constant);
             printf("\n");
@@ -26,7 +32,6 @@ static InterpretResult run()
             return INTERPRET_OK;
         }
     }
-
 
 #undef READ_BYTE
 #undef READ_CONSTANT

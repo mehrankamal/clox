@@ -14,10 +14,13 @@ int main(int argc, char *argv[])
     int const_addr = add_constant(&chunk, 1.2);
     write_chunk(&chunk, OP_CONSTANT, 1);
     write_chunk(&chunk, const_addr, 1);
+    write_chunk(&chunk, OP_NEGATE, 1);
 
     int const2_addr = add_constant(&chunk, 3.4);
     write_chunk(&chunk, OP_CONSTANT, 1);
     write_chunk(&chunk, const2_addr, 1);
+    write_chunk(&chunk, OP_NEGATE, 1);
+    write_chunk(&chunk, OP_NEGATE, 1);
 
     write_chunk(&chunk, OP_RETURN, 1);
 

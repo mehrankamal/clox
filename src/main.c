@@ -11,18 +11,24 @@ int main(int argc, char *argv[])
 
     init_chunk(&chunk);
 
-    int const_addr = add_constant(&chunk, 1.2);
-    write_chunk(&chunk, OP_CONSTANT, 1);
-    write_chunk(&chunk, const_addr, 1);
-    write_chunk(&chunk, OP_NEGATE, 1);
+    int constant = add_constant(&chunk, 1.2);
+    write_chunk(&chunk, OP_CONSTANT, 123);
+    write_chunk(&chunk, constant, 123);
 
-    int const2_addr = add_constant(&chunk, 3.4);
-    write_chunk(&chunk, OP_CONSTANT, 1);
-    write_chunk(&chunk, const2_addr, 1);
-    write_chunk(&chunk, OP_NEGATE, 1);
-    write_chunk(&chunk, OP_NEGATE, 1);
+    constant = add_constant(&chunk, 3.4);
+    write_chunk(&chunk, OP_CONSTANT, 123);
+    write_chunk(&chunk, constant, 123);
 
-    write_chunk(&chunk, OP_RETURN, 1);
+    write_chunk(&chunk, OP_ADD, 123);
+
+    constant = add_constant(&chunk, 5.6);
+    write_chunk(&chunk, OP_CONSTANT, 123);
+    write_chunk(&chunk, constant, 123);
+
+    write_chunk(&chunk, OP_DIV, 123);
+    write_chunk(&chunk, OP_NEGATE, 123);
+
+    write_chunk(&chunk, OP_RETURN, 123);
 
     disassemble_chunk(&chunk, "test chunk");
     interpret(&chunk);

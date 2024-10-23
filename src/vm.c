@@ -12,12 +12,13 @@ static InterpretResult run()
 {
 #define READ_BYTE() (*vm.ip++)
 #define READ_CONSTANT() (vm.chunk->constants.values[READ_BYTE()])
-#define BINARY_OP(op) \
-    do { \
+#define BINARY_OP(op)     \
+    do                    \
+    {                     \
         double b = pop(); \
         double a = pop(); \
-        push(a op b); \
-    } while(false)
+        push(a op b);     \
+    } while (false)
     for (;;)
     {
 #ifdef DEBUG_TRACE_EXECUTION
@@ -41,10 +42,18 @@ static InterpretResult run()
             push(constant);
             break;
         }
-        case OP_ADD: BINARY_OP(+); break;
-        case OP_SUB: BINARY_OP(-); break;
-        case OP_MUL: BINARY_OP(*); break;
-        case OP_DIV: BINARY_OP(/); break;
+        case OP_ADD:
+            BINARY_OP(+);
+            break;
+        case OP_SUB:
+            BINARY_OP(-);
+            break;
+        case OP_MUL:
+            BINARY_OP(*);
+            break;
+        case OP_DIV:
+            BINARY_OP(/);
+            break;
         case OP_NEGATE:
         {
             push(-pop());
@@ -90,6 +99,19 @@ void free_vm()
 
 InterpretResult interpret(const char *source)
 {
-    compile(source);
-    return INTERPRET_OK;
+    Chunk chunk;
+    init_chunk(&chunk);
+
+    if (!compile(source, &chunk))
+    {
+        free_chunk(&chunk);
+        return INTERPRET_COMPILE_ERROR;
+    }
+
+    vm.chunk = &chunk;
+    vm.ip = vm.chunk->code;
+
+    InterpretResult result = run();
+    free_chunk(&chunk);
+    return result;
 }

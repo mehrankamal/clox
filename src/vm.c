@@ -11,6 +11,7 @@ VM vm;
 
 static Value peek(int distance);
 static void runtime_error(const char *format, ...);
+static bool is_falsy(Value value);
 
 static InterpretResult run()
 {
@@ -73,6 +74,9 @@ static InterpretResult run()
         case OP_DIV:
             BINARY_OP(NUMBER_VAL, /);
             break;
+        case OP_NOT:
+            push(BOOL_VAL(is_falsy(pop())));
+            break;
         case OP_NEGATE:
         {
             if (!IS_NUMBER(peek(0)))
@@ -130,6 +134,11 @@ Value pop()
 static Value peek(int distance)
 {
     return vm.stack_top[-1 - distance];
+}
+
+static bool is_falsy(Value value)
+{
+    return IS_NIL(value) || (IS_BOOL(value) && !AS_BOOL(value));
 }
 
 void init_vm()

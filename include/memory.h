@@ -3,6 +3,9 @@
 
 #include "common.h"
 
+#define ALLOCATE(type, count) \
+    (type *)reallocate(NULL, 0, sizeof(type) * count)
+
 #define GROW_CAPACITY(cap) \
     ((cap) < 8 ? 8 : cap * 2)
 

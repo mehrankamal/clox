@@ -120,9 +120,12 @@ static InterpretResult run()
             push(NUMBER_VAL(-AS_NUMBER(pop())));
             break;
         }
-        case OP_RETURN:
+        case OP_PRINT:
             print_value(pop());
             printf("\n");
+            break;
+        case OP_RETURN:
+            // Exit interpreter
             return INTERPRET_OK;
         }
     }
@@ -182,7 +185,7 @@ static void concatenate()
     int length = a->length + b->length;
     char *chars = ALLOCATE(char, length + 1);
     memcpy(chars, a->chars, a->length);
-    memcpy(chars+a->length, b->chars, b->length);
+    memcpy(chars + a->length, b->chars, b->length);
     chars[length] = '\0';
 
     printf("%s", chars);

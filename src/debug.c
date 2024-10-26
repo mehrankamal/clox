@@ -59,6 +59,8 @@ int disassemble_instruction(Chunk *chunk, int offset)
         return simple_instruction("OP_DEFINE_GLOBAL", offset);
     case OP_GET_GLOBAL:
         return simple_instruction("OP_GET_GLOBAL", offset);
+    case OP_SET_GLOBAL:
+        return constant_instruction("OP_SET_GLOBAL", chunk, offset);
     case OP_EQUAL:
         return simple_instruction("OP_EQUAL", offset);
     case OP_GREATER:

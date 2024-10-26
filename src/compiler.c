@@ -237,7 +237,14 @@ static void string()
 static void named_variable(Token name)
 {
     uint8_t arg = identifier_constant(&name);
-    emit_bytes(OP_GET_GLOBAL, arg);
+    if(match(TOKEN_EQUAL))
+    {
+        expression();
+        emit_bytes(OP_SET_GLOBAL, arg);
+    } else
+    {
+        emit_bytes(OP_GET_GLOBAL, arg);
+    }
 }
 
 static void variable()

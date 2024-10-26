@@ -66,7 +66,7 @@ ObjString *copy_string(const char *chars, int length)
     ObjString *interned = table_find_string(&vm.strings, chars, length, hash);
 
     if (interned != NULL)
-        interned;
+        return interned;
 
     char *heap_chars = ALLOCATE(char, length + 1);
     memcpy(heap_chars, chars, length);

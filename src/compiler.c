@@ -234,6 +234,7 @@ static void parse_precedence(Precedence precedence);
 static uint8_t identifier_constant(Token *name);
 static int resolve_local(Compiler *compiler, Token *name);
 static void and_op(bool can_assign);
+static void or_op(bool can_assign);
 
 static void binary(bool can_assign)
 {
@@ -397,7 +398,7 @@ ParseRule rules[] = {
     [TOKEN_FUN] = {NULL, NULL, PREC_NONE},
     [TOKEN_IF] = {NULL, NULL, PREC_NONE},
     [TOKEN_NIL] = {literal, NULL, PREC_NONE},
-    [TOKEN_OR] = {NULL, NULL, PREC_NONE},
+    [TOKEN_OR] = {NULL, or_op, PREC_OR},
     [TOKEN_PRINT] = {NULL, NULL, PREC_NONE},
     [TOKEN_RETURN] = {NULL, NULL, PREC_NONE},
     [TOKEN_SUPER] = {NULL, NULL, PREC_NONE},
@@ -536,6 +537,18 @@ static void and_op(bool can_assign)
 
     emit_byte(OP_POP);
     parse_precedence(PREC_AND);
+    patch_jump(end_jump);
+}
+
+static void or_op(bool can_assign)
+{
+    int else_jump = emit_jump(OP_JUMP_IF_FALSE);
+    int end_jump = emit_jump(OP_JUMP);
+
+    patch_jump(else_jump);
+    emit_byte(OP_POP);
+
+    parse_precedence(PREC_OR);
     patch_jump(end_jump);
 }
 

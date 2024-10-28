@@ -23,6 +23,7 @@ static void runtime_error(const char *format, ...);
 static bool is_falsy(Value value);
 static void concatenate();
 static bool call_value(Value callee, int arg_count);
+static ObjUpvalue *capture_upvalue(Value *local);
 
 static InterpretResult run()
 {
@@ -123,6 +124,18 @@ static InterpretResult run()
             }
             break;
         }
+        case OP_GET_UPVALUE:
+        {
+            uint8_t slot = READ_BYTE();
+            push(*frame->closure->upvalues[slot]->location);
+            break;
+        }
+        case OP_SET_UPVALUE:
+        {
+            uint8_t slot = READ_BYTE();
+            *frame->closure->upvalues[slot]->location = peek(0);
+            break;
+        }
         case OP_EQUAL:
         {
             Value b = pop();
@@ -215,6 +228,19 @@ static InterpretResult run()
             ObjFunction *function = AS_FUNCTION(READ_CONSTANT());
             ObjClosure *closure = new_closure(function);
             push(OBJ_VAL(closure));
+            for (int i = 0; i < closure->upvalue_count; i++)
+            {
+                uint8_t is_local = READ_BYTE();
+                uint8_t index = READ_BYTE();
+                if (is_local)
+                {
+                    closure->upvalues[i] = capture_upvalue(frame->slots + index);
+                }
+                else
+                {
+                    closure->upvalues[i] = frame->closure->upvalues[index];
+                }
+            }
             break;
         }
         case OP_RETURN:
@@ -349,6 +375,12 @@ static bool call_value(Value callee, int arg_count)
 
     runtime_error("Can only call function and classes.");
     return false;
+}
+
+static ObjUpvalue *capture_upvalue(Value *local)
+{
+    ObjUpvalue *created_upvalue = new_upvalue(local);
+    return created_upvalue;
 }
 
 static bool is_falsy(Value value)

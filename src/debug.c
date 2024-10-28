@@ -2,10 +2,19 @@
 
 #include "debug.h"
 #include "value.h"
+#include "object.h"
 
 void disassemble_chunk(Chunk *chunk, const char *name)
 {
     printf("== %s ==\n", name);
+    printf("Constants = [");
+    for (int i = 0; i < chunk->constants.count; i++)
+    {
+        if (i > 0)
+            printf(", ");
+        print_value(chunk->constants.values[i]);
+    }
+    printf("]\n");
     for (int offset = 0; offset < chunk->count;)
     {
         offset = disassemble_instruction(chunk, offset);
@@ -80,6 +89,10 @@ int disassemble_instruction(Chunk *chunk, int offset)
         return simple_instruction("OP_GET_GLOBAL", offset);
     case OP_SET_GLOBAL:
         return constant_instruction("OP_SET_GLOBAL", chunk, offset);
+    case OP_SET_UPVALUE:
+        return byte_instruction("OP_SET_UPVALUE", chunk, offset);
+    case OP_GET_UPVALUE:
+        return byte_instruction("OP_GET_UPVALUE", chunk, offset);
     case OP_EQUAL:
         return simple_instruction("OP_EQUAL", offset);
     case OP_GREATER:
@@ -115,6 +128,14 @@ int disassemble_instruction(Chunk *chunk, int offset)
         printf("%-16s %4d ", "OP_CLOSURE", constant);
         print_value(chunk->constants.values[constant]);
         printf("\n");
+
+        ObjFunction *function = AS_FUNCTION(chunk->constants.values[constant]);
+        for (int j = 0; j < function->upvalue_count; j++)
+        {
+            int is_local = chunk->code[offset++];
+            int index = chunk->code[offset++];
+            printf("%4d      |                     %s %d\n", offset - 2, is_local ? "local" : "upvalue", index);
+        }
         return offset;
     }
     case OP_RETURN:

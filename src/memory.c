@@ -20,6 +20,11 @@ static void free_object(Obj *object)
 {
     switch (object->type)
     {
+    case OBJ_CLOSURE:
+    {
+        FREE(ObjClosure, object);
+        break;
+    }
     case OBJ_STRING:
     {
         ObjString *string = (ObjString *)object;

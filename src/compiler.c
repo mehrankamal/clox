@@ -183,6 +183,7 @@ static int emit_jump(uint8_t instruction)
 
 static void emit_return()
 {
+    emit_byte(OP_NIL);
     emit_byte(OP_RETURN);
 }
 

@@ -205,8 +205,19 @@ static InterpretResult run()
             break;
         }
         case OP_RETURN:
-            // Exit interpreter
-            return INTERPRET_OK;
+        {
+            Value result = pop();
+            vm.frame_count--;
+            if (vm.frame_count == 0)
+            {
+                pop();
+                return INTERPRET_OK;
+            }
+            vm.stack_top = frame->slots;
+            push(result);
+            frame = &vm.frames[vm.frame_count - 1];
+            break;
+        }
         default:
 
             runtime_error("OP code %d is not implemented by the VM.", instruction);
@@ -242,7 +253,7 @@ static void runtime_error(const char *format, ...)
         ObjFunction *function = frame->function;
         size_t instruciton = frame->ip - function->chunk.code - 1;
         fprintf(stderr, "[line %d] in ", function->chunk.lines[instruciton]);
-        if(function ->name == NULL)
+        if (function->name == NULL)
         {
             fprintf(stderr, "script\n");
         }

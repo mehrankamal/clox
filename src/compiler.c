@@ -276,6 +276,7 @@ static uint8_t identifier_constant(Token *name);
 static int resolve_local(Compiler *compiler, Token *name);
 static void and_op(bool can_assign);
 static void or_op(bool can_assign);
+static uint8_t argument_list();
 
 static void binary(bool can_assign)
 {
@@ -318,6 +319,12 @@ static void binary(bool can_assign)
     default:
         return;
     }
+}
+
+static void call(bool can_assign)
+{
+    uint8_t arg_count = argument_list();
+    emit_bytes(OP_CALL, arg_count);
 }
 
 static void grouping(bool can_assign)
@@ -409,7 +416,7 @@ static void unary(bool can_assign)
 }
 
 ParseRule rules[] = {
-    [TOKEN_LEFT_PAREN] = {grouping, NULL, PREC_NONE},
+    [TOKEN_LEFT_PAREN] = {grouping, call, PREC_CALL},
     [TOKEN_RIGHT_PAREN] = {NULL, NULL, PREC_NONE},
     [TOKEN_LEFT_BRACE] = {NULL, NULL, PREC_NONE},
     [TOKEN_RIGHT_BRACE] = {NULL, NULL, PREC_NONE},
@@ -572,6 +579,25 @@ static void define_variable(uint8_t global)
         return;
     }
     emit_bytes(OP_DEFINE_GLOBAL, global);
+}
+
+static uint8_t argument_list()
+{
+    uint8_t arg_count = 0;
+    if (!check(TOKEN_RIGHT_PAREN))
+    {
+        do
+        {
+            expression();
+            if (arg_count == 255)
+            {
+                error("Can't have more than 255 arguments.");
+            }
+            arg_count++;
+        } while (match(TOKEN_COMMA));
+    }
+    consume(TOKEN_RIGHT_PAREN, "Expect ')' after arguments.");
+    return arg_count;
 }
 
 static void and_op(bool can_assign)

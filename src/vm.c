@@ -433,8 +433,8 @@ static bool is_falsy(Value value)
 
 static void concatenate()
 {
-    ObjString *b = AS_STRING(pop());
-    ObjString *a = AS_STRING(pop());
+    ObjString *b = AS_STRING(peek(0));
+    ObjString *a = AS_STRING(peek(1));
 
     int length = a->length + b->length;
     char *chars = ALLOCATE(char, length + 1);
@@ -445,6 +445,8 @@ static void concatenate()
     printf("%s", chars);
 
     ObjString *result = take_string(chars, length);
+    pop();
+    pop();
     push(OBJ_VAL(result));
 }
 

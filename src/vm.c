@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <stdlib.h>
 
 #include "common.h"
 #include "compiler.h"
@@ -451,6 +452,11 @@ void init_vm()
 {
     reset_stack();
     vm.objects = NULL;
+
+    vm.gray_count = 0;
+    vm.gray_capacity = 0;
+    vm.gray_stack = NULL;
+
     init_table(&vm.globals);
     init_table(&vm.strings);
     define_native("clock", clock_native);
@@ -461,6 +467,8 @@ void free_vm()
     free_table(&vm.globals);
     free_table(&vm.strings);
     free_objects();
+
+    free(vm.gray_stack);
 }
 
 InterpretResult interpret(const char *source)

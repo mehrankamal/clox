@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <stdlib.h>
 
 #include "common.h"
 #include "compiler.h"
@@ -432,8 +433,8 @@ static bool is_falsy(Value value)
 
 static void concatenate()
 {
-    ObjString *b = AS_STRING(pop());
-    ObjString *a = AS_STRING(pop());
+    ObjString *b = AS_STRING(peek(0));
+    ObjString *a = AS_STRING(peek(1));
 
     int length = a->length + b->length;
     char *chars = ALLOCATE(char, length + 1);
@@ -444,6 +445,8 @@ static void concatenate()
     printf("%s", chars);
 
     ObjString *result = take_string(chars, length);
+    pop();
+    pop();
     push(OBJ_VAL(result));
 }
 
@@ -451,6 +454,13 @@ void init_vm()
 {
     reset_stack();
     vm.objects = NULL;
+    vm.bytes_allocated = 0;
+    vm.next_gc = 1024 * 1024;
+
+    vm.gray_count = 0;
+    vm.gray_capacity = 0;
+    vm.gray_stack = NULL;
+
     init_table(&vm.globals);
     init_table(&vm.strings);
     define_native("clock", clock_native);
@@ -461,6 +471,8 @@ void free_vm()
     free_table(&vm.globals);
     free_table(&vm.strings);
     free_objects();
+
+    free(vm.gray_stack);
 }
 
 InterpretResult interpret(const char *source)

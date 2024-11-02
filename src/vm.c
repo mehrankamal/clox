@@ -19,6 +19,19 @@ static Value clock_native(int argc, Value *argv)
     return NUMBER_VAL((double)clock() / CLOCKS_PER_SEC);
 }
 
+static Value input_native(int argc, Value *argv)
+{
+    char *buffer = malloc(1024 * sizeof(char));
+
+    if(argc > 0) {
+        printf("%s", AS_CSTRING(argv[0]));
+    }
+    scanf(" %1023[^\n]", buffer);
+    Value read_string = OBJ_VAL(copy_string(buffer, strlen(buffer)));
+    free(buffer);
+    return read_string;
+}
+
 static Value peek(int distance);
 static void runtime_error(const char *format, ...);
 static bool is_falsy(Value value);
@@ -464,6 +477,7 @@ void init_vm()
     init_table(&vm.globals);
     init_table(&vm.strings);
     define_native("clock", clock_native);
+    define_native("input", input_native);
 }
 
 void free_vm()

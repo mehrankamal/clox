@@ -1,0 +1,5 @@
+var name = input();
+print "Hello, " + name;
+
+name = input("Enter your name: ");
+print "Hellow, " + name;

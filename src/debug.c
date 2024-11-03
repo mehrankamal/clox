@@ -79,6 +79,10 @@ int disassemble_instruction(Chunk *chunk, int offset)
         return simple_instruction("OP_FALSE", offset);
     case OP_POP:
         return simple_instruction("OP_POP", offset);
+    case OP_GET_PROPERTY:
+        return constant_instruction("OP_GET_PROPERTY", chunk, offset);
+    case OP_SET_PROPERTY:
+        return constant_instruction("OP_SET_PROPERTY", chunk, offset);
     case OP_GET_LOCAL:
         return byte_instruction("OP_GET_LOCAL", chunk, offset);
     case OP_SET_LOCAL:

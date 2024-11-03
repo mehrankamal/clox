@@ -449,11 +449,15 @@ static bool call_value(Value callee, int arg_count)
             vm.stack_top[-arg_count - 1] = OBJ_VAL(new_instance(klass));
             return true;
         }
+        case OBJ_BOUND_METHOD:
+        {
+            ObjBoundMethod *bound = AS_BOUND_METHOD(callee);
+            return call(bound->method, arg_count);
+        }
         case OBJ_INSTANCE:
         case OBJ_FUNCTION:
         case OBJ_STRING:
         case OBJ_UPVALUE:
-        case OBJ_BOUND_METHOD:
             break;
         }
     }

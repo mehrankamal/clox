@@ -53,6 +53,15 @@ static uint32_t hash_string(const char *key, int length)
     return hash;
 }
 
+ObjBoundMethod *new_bound_method(Value receiver, ObjClosure *method)
+{
+    ObjBoundMethod *bound = ALLOCATE_OBJ(ObjBoundMethod, OBJ_BOUND_METHOD);
+    bound->receiver = receiver;
+    bound->method = method;
+
+    return bound;
+}
+
 ObjClosure *new_closure(ObjFunction *function)
 {
     ObjUpvalue **upvalues = ALLOCATE(ObjUpvalue *, function->upvalue_count);
@@ -159,6 +168,9 @@ void print_object(Value value)
     case OBJ_CLASS:
         printf("%s", AS_CLASS(value)->name->chars);
         break;
+    case OBJ_BOUND_METHOD:
+        print_function(AS_BOUND_METHOD(value)->method->function);
+        break;
     case OBJ_CLOSURE:
         print_function(AS_CLOSURE(value)->function);
         break;
@@ -176,5 +188,6 @@ void print_object(Value value)
         break;
     case OBJ_INSTANCE:
         printf("%s instance", AS_INSTANCE(value)->klass->name->chars);
+        break;
     }
 }

@@ -40,6 +40,8 @@ static void concatenate();
 static bool call_value(Value callee, int arg_count);
 static ObjUpvalue *capture_upvalue(Value *local);
 static void close_upvalues(Value *last);
+static void define_method(ObjString *name);
+static bool bind_method(ObjClass *klass, ObjString *name);
 
 static InterpretResult run()
 {
@@ -116,8 +118,11 @@ static InterpretResult run()
                 break;
             }
 
-            runtime_error("Undefined property '%s'.", name->chars);
-            return INTERPRET_RUNTIME_ERROR;
+            if (!bind_method(instance->klass, name))
+            {
+                return INTERPRET_RUNTIME_ERROR;
+            }
+            break;
         }
         case OP_SET_PROPERTY:
         {
@@ -448,12 +453,28 @@ static bool call_value(Value callee, int arg_count)
         case OBJ_FUNCTION:
         case OBJ_STRING:
         case OBJ_UPVALUE:
+        case OBJ_BOUND_METHOD:
             break;
         }
     }
 
     runtime_error("Can only call function and classes.");
     return false;
+}
+
+static bool bind_method(ObjClass *klass, ObjString *name)
+{
+    Value method;
+    if (!table_get(&klass->methods, name, &method))
+    {
+        runtime_error("Undefined property '%s'.", name->chars);
+        return false;
+    }
+
+    ObjBoundMethod *bound = new_bound_method(peek(0), AS_CLOSURE(method));
+    pop();
+    push(OBJ_VAL(bound));
+    return true;
 }
 
 static ObjUpvalue *capture_upvalue(Value *local)

@@ -351,11 +351,12 @@ static void dot(bool can_assign)
     consume(TOKEN_IDENTIFIER, "Expect property name after '.'.");
     uint8_t name = identifier_constant(&parser.previous);
 
-    if(can_assign && match(TOKEN_EQUAL))
+    if (can_assign && match(TOKEN_EQUAL))
     {
         expression();
         emit_bytes(OP_SET_PROPERTY, name);
-    } else 
+    }
+    else
     {
         emit_bytes(OP_GET_PROPERTY, name);
     }
@@ -789,7 +790,7 @@ static void class_declaration()
 
     named_variable(class_name, false);
     consume(TOKEN_LEFT_BRACE, "Expect '{' before class body.");
-    while(!check(TOKEN_RIGHT_BRACE) && !(TOKEN_EOF))
+    while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF))
     {
         method();
     }
@@ -963,7 +964,7 @@ static void synchronize()
 
 static void declaration()
 {
-    if(match(TOKEN_CLASS))
+    if (match(TOKEN_CLASS))
     {
         class_declaration();
     }

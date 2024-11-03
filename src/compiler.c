@@ -60,6 +60,7 @@ typedef enum
 {
     FUN_TYPE_FUNCTION,
     FUN_TYPE_METHOD,
+    FUN_TYPE_INITIALIZER,
     FUN_TYPE_SCRIPT,
 } FunctionType;
 
@@ -199,7 +200,15 @@ static int emit_jump(uint8_t instruction)
 
 static void emit_return()
 {
-    emit_byte(OP_NIL);
+    if (current->type == FUN_TYPE_INITIALIZER)
+    {
+        emit_bytes(OP_GET_LOCAL, 0);
+    }
+    else
+    {
+        emit_byte(OP_NIL);
+    }
+
     emit_byte(OP_RETURN);
 }
 
@@ -799,6 +808,12 @@ static void method()
     consume(TOKEN_IDENTIFIER, "Expect method name.");
     uint8_t constant = identifier_constant(&parser.previous);
     FunctionType type = FUN_TYPE_METHOD;
+
+    if (parser.previous.length == 4 && memcmp("init", parser.previous.start, 4) == 0)
+    {
+        type = FUN_TYPE_INITIALIZER;
+    }
+
     function(type);
     emit_bytes(OP_METHOD, constant);
 }
@@ -808,7 +823,6 @@ static void class_declaration()
     consume(TOKEN_IDENTIFIER, "Expect class name");
     Token class_name = parser.previous;
     uint8_t name_constant = identifier_constant(&parser.previous);
-    printf("Declaring name_constant: %d\n", name_constant);
     declare_variable();
 
     emit_bytes(OP_CLASS, name_constant);
@@ -894,6 +908,11 @@ static void return_statement()
     }
     else
     {
+        if (current->type == FUN_TYPE_INITIALIZER)
+        {
+            error("Can't return a value from an initializer.");
+        }
+
         expression();
         consume(TOKEN_SEMICOLON, "Expect ';' after return value.");
         emit_byte(OP_RETURN);

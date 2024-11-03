@@ -279,6 +279,17 @@ static InterpretResult run()
             frame = &vm.frames[vm.frame_count - 1];
             break;
         }
+        case OP_INVOKE:
+        {
+            ObjString *method = READ_STRING();
+            int arg_count = READ_BYTE();
+            if (!invoke(method, arg_count))
+            {
+                return INTERPRET_RUNTIME_ERROR;
+            }
+            frame = &vm.frames[vm.frame_count - 1];
+            break;
+        }
         case OP_CLOSURE:
         {
             ObjFunction *function = AS_FUNCTION(READ_CONSTANT());
@@ -475,6 +486,40 @@ static bool call_value(Value callee, int arg_count)
 
     runtime_error("Can only call function and classes.");
     return false;
+}
+
+static bool invoke_from_class(ObjClass *klass, ObjString *name, int arg_count)
+{
+    Value method;
+    if (!table_get(&klass->methods, name, &method))
+    {
+        runtime_error("Undefined property '%s'.", name->chars);
+        return false;
+    }
+
+    return call(AS_CLOSURE(method), arg_count);
+}
+
+static bool invoke(ObjString *name, int arg_count)
+{
+    Value receiver = peek(arg_count);
+
+    if (!IS_INSTANCE(receiver))
+    {
+        runtime_error("Only instances have methods.");
+        return false;
+    }
+
+    ObjInstance *instance = AS_INSTANCE(receiver);
+
+    Value value;
+    if (!table_get(&instance->fields, name, &value))
+    {
+        vm.stack_top[-arg_count - 1] = value;
+        return call_value(value, arg_count);
+    }
+
+    return invoke_from_class(instance->klass, name, arg_count);
 }
 
 static bool bind_method(ObjClass *klass, ObjString *name)

@@ -381,6 +381,12 @@ static void dot(bool can_assign)
         expression();
         emit_bytes(OP_SET_PROPERTY, name);
     }
+    else if (match(TOKEN_LEFT_PAREN))
+    {
+        uint8_t arg_count = argument_list();
+        emit_bytes(OP_INVOKE, name);
+        emit_byte(arg_count);
+    }
     else
     {
         emit_bytes(OP_GET_PROPERTY, name);

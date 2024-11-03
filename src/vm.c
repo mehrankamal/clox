@@ -447,6 +447,16 @@ static bool call_value(Value callee, int arg_count)
         {
             ObjClass *klass = AS_CLASS(callee);
             vm.stack_top[-arg_count - 1] = OBJ_VAL(new_instance(klass));
+            Value initializer;
+            if (table_get(&klass->methods, vm.init_string, &initializer))
+            {
+                return call(AS_CLOSURE(initializer), arg_count);
+            }
+            else if (arg_count != 0)
+            {
+                runtime_error("Expected 0 arguments but got %d.", arg_count);
+                return false;
+            }
             return true;
         }
         case OBJ_BOUND_METHOD:
@@ -560,6 +570,10 @@ void init_vm()
 
     init_table(&vm.globals);
     init_table(&vm.strings);
+
+    vm.init_string = NULL;
+    vm.init_string = copy_string("init", 4);
+
     define_native("clock", clock_native);
     define_native("input", input_native);
 }
@@ -568,6 +582,7 @@ void free_vm()
 {
     free_table(&vm.globals);
     free_table(&vm.strings);
+    vm.init_string = NULL;
     free_objects();
 
     free(vm.gray_stack);

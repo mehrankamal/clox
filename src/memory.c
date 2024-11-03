@@ -224,6 +224,7 @@ static void mark_roots()
     }
 
     mark_table(&vm.globals);
+    mark_object((Obj *)vm.init_string);
     mark_compiler_roots();
 
     for (int i = 0; i < vm.frame_count; i++)

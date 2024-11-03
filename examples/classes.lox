@@ -1,3 +1,4 @@
 class Greeter {}
 
 print Greeter;
+print Greeter();

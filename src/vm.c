@@ -316,8 +316,10 @@ static InterpretResult run()
         case OP_CLASS:
             push(OBJ_VAL(new_class(READ_STRING())));
             break;
+        case OP_METHOD:
+            define_method(READ_STRING());
+            break;
         default:
-
             runtime_error("OP code %d is not implemented by the VM.", instruction);
             return INTERPRET_RUNTIME_ERROR;
         }
@@ -371,6 +373,14 @@ static void define_native(const char *name, NativeFn function)
     push(OBJ_VAL(new_native(function)));
     table_set(&vm.globals, AS_STRING(vm.stack[0]), vm.stack[1]);
     pop();
+    pop();
+}
+
+static void define_method(ObjString *name)
+{
+    Value method = peek(0);
+    ObjClass *klass = AS_CLASS(peek(1));
+    table_set(&klass->methods, name, method);
     pop();
 }
 

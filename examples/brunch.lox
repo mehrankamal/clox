@@ -1,0 +1,8 @@
+class Brunch {
+  eggs() {}
+}
+
+var brunch = Brunch();
+var eggs = brunch.eggs;
+
+print eggs;

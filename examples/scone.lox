@@ -1,0 +1,9 @@
+class Scone {
+  topping(second) {
+    print "scone with " + this.first + " and " + second;
+  }
+}
+
+var scone = Scone();
+scone.first = "blue-berries";
+scone.topping("cream");

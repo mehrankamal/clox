@@ -33,7 +33,7 @@ static ObjString *allocate_string(char *chars, int length, uint32_t hash)
     string->length = length;
     string->chars = chars;
     string->hash = hash;
-    
+
     push(OBJ_VAL(string));
     table_set(&vm.strings, string, NIL_VAL);
     pop();
@@ -53,6 +53,15 @@ static uint32_t hash_string(const char *key, int length)
     return hash;
 }
 
+ObjBoundMethod *new_bound_method(Value receiver, ObjClosure *method)
+{
+    ObjBoundMethod *bound = ALLOCATE_OBJ(ObjBoundMethod, OBJ_BOUND_METHOD);
+    bound->receiver = receiver;
+    bound->method = method;
+
+    return bound;
+}
+
 ObjClosure *new_closure(ObjFunction *function)
 {
     ObjUpvalue **upvalues = ALLOCATE(ObjUpvalue *, function->upvalue_count);
@@ -68,6 +77,14 @@ ObjClosure *new_closure(ObjFunction *function)
     return closure;
 }
 
+ObjClass *new_class(ObjString *name)
+{
+    ObjClass *klass = ALLOCATE_OBJ(ObjClass, OBJ_CLASS);
+    klass->name = name;
+    init_table(&klass->methods);
+    return klass;
+}
+
 ObjFunction *new_function()
 {
     ObjFunction *function = ALLOCATE_OBJ(ObjFunction, OBJ_FUNCTION);
@@ -77,6 +94,14 @@ ObjFunction *new_function()
     init_chunk(&function->chunk);
 
     return function;
+}
+
+ObjInstance *new_instance(ObjClass *klass)
+{
+    ObjInstance *instance = ALLOCATE_OBJ(ObjInstance, OBJ_INSTANCE);
+    instance->klass = klass;
+    init_table(&instance->fields);
+    return instance;
 }
 
 ObjNative *new_native(NativeFn function)
@@ -140,6 +165,12 @@ void print_object(Value value)
 {
     switch (OBJ_TYPE(value))
     {
+    case OBJ_CLASS:
+        printf("%s", AS_CLASS(value)->name->chars);
+        break;
+    case OBJ_BOUND_METHOD:
+        print_function(AS_BOUND_METHOD(value)->method->function);
+        break;
     case OBJ_CLOSURE:
         print_function(AS_CLOSURE(value)->function);
         break;
@@ -154,6 +185,9 @@ void print_object(Value value)
         break;
     case OBJ_NATIVE:
         printf("<native fn>");
+        break;
+    case OBJ_INSTANCE:
+        printf("%s instance", AS_INSTANCE(value)->klass->name->chars);
         break;
     }
 }

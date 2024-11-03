@@ -11,6 +11,8 @@ typedef enum
     OP_TRUE,
     OP_FALSE,
     OP_POP,
+    OP_GET_PROPERTY,
+    OP_SET_PROPERTY,
     OP_GET_LOCAL,
     OP_SET_LOCAL,
     OP_GET_UPVALUE,
@@ -32,9 +34,12 @@ typedef enum
     OP_JUMP,
     OP_LOOP,
     OP_CALL,
+    OP_INVOKE,
     OP_CLOSURE,
     OP_CLOSE_UPVALUE,
     OP_RETURN,
+    OP_CLASS,
+    OP_METHOD,
 } OpCode;
 
 typedef struct

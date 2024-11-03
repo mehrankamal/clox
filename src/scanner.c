@@ -95,6 +95,8 @@ static void skip_whitespaces()
         {
         case '\n':
             scanner.line++;
+            advance();
+            break;
         case ' ':
         case '\t':
         case '\r':
@@ -110,6 +112,7 @@ static void skip_whitespaces()
             {
                 return;
             }
+            break;
         default:
             return;
         }
@@ -277,5 +280,5 @@ Token scan_token()
         return string();
     }
 
-    return error_token("Unexpected character.");
+    return error_token("Unexpected character");
 }

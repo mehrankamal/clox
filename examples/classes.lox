@@ -1,0 +1,9 @@
+class Greeter {}
+
+print Greeter;
+print Greeter();
+
+var myGreeter = Greeter();
+myGreeter.name = "Mehran";
+
+print "Hello ," + myGreeter.name;

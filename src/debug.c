@@ -31,6 +31,17 @@ static int constant_instruction(const char *name, Chunk *chunk, int offset)
     return offset + 2;
 }
 
+static int invoke_instruction(const char *name, Chunk *chunk, int offset)
+{
+    uint8_t constant = chunk->code[offset + 1];
+    uint8_t arg_count = chunk->code[offset + 2];
+
+    printf("%-16s (%d args) %4d '", name, arg_count, constant);
+    print_value(chunk->constants.values[constant]);
+    printf("'\n");
+    return offset + 2;
+}
+
 static int simple_instruction(const char *name, int offset)
 {
     printf("%s\n", name);
@@ -79,6 +90,10 @@ int disassemble_instruction(Chunk *chunk, int offset)
         return simple_instruction("OP_FALSE", offset);
     case OP_POP:
         return simple_instruction("OP_POP", offset);
+    case OP_GET_PROPERTY:
+        return constant_instruction("OP_GET_PROPERTY", chunk, offset);
+    case OP_SET_PROPERTY:
+        return constant_instruction("OP_SET_PROPERTY", chunk, offset);
     case OP_GET_LOCAL:
         return byte_instruction("OP_GET_LOCAL", chunk, offset);
     case OP_SET_LOCAL:
@@ -121,6 +136,8 @@ int disassemble_instruction(Chunk *chunk, int offset)
         return jump_instruction("OP_LOOP", -1, chunk, offset);
     case OP_CALL:
         return byte_instruction("OP_CALL", chunk, offset);
+    case OP_INVOKE:
+        return invoke_instruction("OP_INVOKE", chunk, offset);
     case OP_CLOSURE:
     {
         offset++;
@@ -142,6 +159,10 @@ int disassemble_instruction(Chunk *chunk, int offset)
         return simple_instruction("OP_CLOSE_UPVALUE", offset);
     case OP_RETURN:
         return simple_instruction("OP_RETURN", offset);
+    case OP_CLASS:
+        return constant_instruction("OP_CLASS", chunk, offset);
+    case OP_METHOD:
+        return constant_instruction("OP_METHOD", chunk, offset);
     default:
         printf("Unknown opcode %d\n", instruction);
         return offset + 1;

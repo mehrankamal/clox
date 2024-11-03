@@ -111,6 +111,13 @@ static void blacken_object(Obj *object)
 #endif
     switch (object->type)
     {
+    case OBJ_CLASS:
+    {
+        ObjClass *klass = (ObjClass *)object;
+        mark_object((Obj *)klass->name);
+        mark_table(&klass->methods);
+        break;
+    }
     case OBJ_UPVALUE:
         mark_value(((ObjUpvalue *)object)->closed);
         break;
@@ -131,11 +138,22 @@ static void blacken_object(Obj *object)
         }
         break;
     }
+    case OBJ_INSTANCE:
+    {
+        ObjInstance *instance = (ObjInstance *)object;
+        mark_object((Obj *)instance->klass);
+        mark_table(&instance->fields);
+        break;
+    }
+    case OBJ_BOUND_METHOD:
+    {
+        ObjBoundMethod *bound = (ObjBoundMethod *)object;
+        mark_value(bound->receiver);
+        mark_object((Obj *)bound->method);
+        break;
+    }
     case OBJ_NATIVE:
     case OBJ_STRING:
-        break;
-
-    default:
         break;
     }
 }
@@ -149,6 +167,13 @@ static void free_object(Obj *object)
 
     switch (object->type)
     {
+    case OBJ_CLASS:
+    {
+        ObjClass *klass = (ObjClass *)object;
+        free_table(&klass->methods);
+        FREE(ObjClass, object);
+        break;
+    }
     case OBJ_CLOSURE:
     {
         ObjClosure *closure = (ObjClosure *)object;
@@ -170,12 +195,23 @@ static void free_object(Obj *object)
         FREE(ObjFunction, object);
         break;
     }
+    case OBJ_INSTANCE:
+    {
+        ObjInstance *initstate = (ObjInstance *)object;
+        free_table(&initstate->fields);
+        FREE(ObjInstance, object);
+        break;
+    }
     case OBJ_NATIVE:
     {
         FREE(ObjNative, object);
         break;
     }
-    default:
+    case OBJ_UPVALUE:
+        FREE(ObjUpvalue, object);
+        break;
+    case OBJ_BOUND_METHOD:
+        FREE(ObjBoundMethod, object);
         break;
     }
 }
@@ -188,6 +224,7 @@ static void mark_roots()
     }
 
     mark_table(&vm.globals);
+    mark_object((Obj *)vm.init_string);
     mark_compiler_roots();
 
     for (int i = 0; i < vm.frame_count; i++)

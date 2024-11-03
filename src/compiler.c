@@ -59,6 +59,7 @@ typedef struct
 typedef enum
 {
     FUN_TYPE_FUNCTION,
+    FUN_TYPE_METHOD,
     FUN_TYPE_SCRIPT,
 } FunctionType;
 
@@ -243,9 +244,17 @@ static void init_compiler(Compiler *compiler, FunctionType type)
 
     Local *local = &current->locals[current->local_count++];
     local->depth = 0;
-    local->name.start = "";
-    local->name.length = 0;
     local->is_captured = false;
+    if (type != FUN_TYPE_FUNCTION)
+    {
+        local->name.start = "this";
+        local->name.length = 4;
+    }
+    else
+    {
+        local->name.start = "";
+        local->name.length = 0;
+    }
 }
 
 static ObjFunction *end_compiler()
@@ -296,6 +305,7 @@ static int resolve_upvalue(Compiler *compiler, Token *name);
 static void and_op(bool can_assign);
 static void or_op(bool can_assign);
 static uint8_t argument_list();
+static void this_(bool can_assign);
 
 static void binary(bool can_assign)
 {
@@ -490,7 +500,7 @@ ParseRule rules[] = {
     [TOKEN_PRINT] = {NULL, NULL, PREC_NONE},
     [TOKEN_RETURN] = {NULL, NULL, PREC_NONE},
     [TOKEN_SUPER] = {NULL, NULL, PREC_NONE},
-    [TOKEN_THIS] = {NULL, NULL, PREC_NONE},
+    [TOKEN_THIS] = {this_, NULL, PREC_NONE},
     [TOKEN_TRUE] = {literal, NULL, PREC_NONE},
     [TOKEN_VAR] = {NULL, NULL, PREC_NONE},
     [TOKEN_WHILE] = {NULL, NULL, PREC_NONE},
@@ -637,6 +647,11 @@ static void declare_variable()
     add_local(*name);
 }
 
+static void this_(bool can_assign)
+{
+    variable(false);
+}
+
 static uint8_t parse_variable(const char *error_message)
 {
     consume(TOKEN_IDENTIFIER, error_message);
@@ -772,7 +787,7 @@ static void method()
 {
     consume(TOKEN_IDENTIFIER, "Expect method name.");
     uint8_t constant = identifier_constant(&parser.previous);
-    FunctionType type = FUN_TYPE_FUNCTION;
+    FunctionType type = FUN_TYPE_METHOD;
     function(type);
     emit_bytes(OP_METHOD, constant);
 }

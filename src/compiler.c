@@ -752,6 +752,20 @@ static void function_declaration()
     define_variable(global);
 }
 
+static void class_declaration()
+{
+    consume(TOKEN_IDENTIFIER, "Expect class name");
+    uint8_t name_constant = identifier_constant(&parser.previous);
+    printf("Declaring name_constant: %d\n", name_constant);
+    declare_variable();
+
+    emit_bytes(OP_CLASS, name_constant);
+    define_variable(name_constant);
+
+    consume(TOKEN_LEFT_BRACE, "Expect '{' before class body.");
+    consume(TOKEN_RIGHT_BRACE, "Expect '}' after class body.");
+}
+
 static void var_declaration()
 {
     uint8_t global = parse_variable("Expect variable name.");
@@ -918,7 +932,11 @@ static void synchronize()
 
 static void declaration()
 {
-    if (match(TOKEN_FUN))
+    if(match(TOKEN_CLASS))
+    {
+        class_declaration();
+    }
+    else if (match(TOKEN_FUN))
     {
         function_declaration();
     }

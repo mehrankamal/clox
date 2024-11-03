@@ -23,11 +23,12 @@ static Value input_native(int argc, Value *argv)
 {
     char *buffer = malloc(1024 * sizeof(char));
 
-    if(argc > 0) {
+    if (argc > 0)
+    {
         printf("%s", AS_CSTRING(argv[0]));
     }
     scanf(" %1023[^\n]", buffer);
-    Value read_string = OBJ_VAL(copy_string(buffer, strlen(buffer)));
+    Value read_string = OBJ_VAL(copy_string(buffer, (int)strlen(buffer)));
     free(buffer);
     return read_string;
 }
@@ -277,6 +278,9 @@ static InterpretResult run()
             frame = &vm.frames[vm.frame_count - 1];
             break;
         }
+        case OP_CLASS:
+            push(OBJ_VAL(new_class(READ_STRING())));
+            break;
         default:
 
             runtime_error("OP code %d is not implemented by the VM.", instruction);
@@ -430,7 +434,7 @@ static ObjUpvalue *capture_upvalue(Value *local)
 
 static void close_upvalues(Value *last)
 {
-    while(vm.open_upvalues != NULL && vm.open_upvalues->location >= last)
+    while (vm.open_upvalues != NULL && vm.open_upvalues->location >= last)
     {
         ObjUpvalue *upvalue = vm.open_upvalues;
         upvalue->closed = *upvalue->location;

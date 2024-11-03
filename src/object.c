@@ -33,7 +33,7 @@ static ObjString *allocate_string(char *chars, int length, uint32_t hash)
     string->length = length;
     string->chars = chars;
     string->hash = hash;
-    
+
     push(OBJ_VAL(string));
     table_set(&vm.strings, string, NIL_VAL);
     pop();
@@ -66,6 +66,13 @@ ObjClosure *new_closure(ObjFunction *function)
     closure->upvalues = upvalues;
     closure->upvalue_count = function->upvalue_count;
     return closure;
+}
+
+ObjClass *new_class(ObjString *name)
+{
+    ObjClass *klass = ALLOCATE_OBJ(ObjClass, OBJ_CLASS);
+    klass->name = name;
+    return klass;
 }
 
 ObjFunction *new_function()
@@ -140,6 +147,9 @@ void print_object(Value value)
 {
     switch (OBJ_TYPE(value))
     {
+    case OBJ_CLASS:
+        printf("%s", AS_CLASS(value)->name->chars);
+        break;
     case OBJ_CLOSURE:
         print_function(AS_CLOSURE(value)->function);
         break;

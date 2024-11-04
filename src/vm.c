@@ -43,6 +43,7 @@ static void close_upvalues(Value *last);
 static void define_method(ObjString *name);
 static bool bind_method(ObjClass *klass, ObjString *name);
 static bool invoke(ObjString *name, int arg_count);
+static bool invoke_from_class(ObjClass *klass, ObjString *name, int arg_count);
 
 static InterpretResult run()
 {
@@ -285,6 +286,18 @@ static InterpretResult run()
             ObjString *method = READ_STRING();
             int arg_count = READ_BYTE();
             if (!invoke(method, arg_count))
+            {
+                return INTERPRET_RUNTIME_ERROR;
+            }
+            frame = &vm.frames[vm.frame_count - 1];
+            break;
+        }
+        case OP_INVOKE_SUPER:
+        {
+            ObjString *method = READ_STRING();
+            int arg_count = READ_BYTE();
+            ObjClass *superclass = AS_CLASS(pop());
+            if (!invoke_from_class(superclass, method, arg_count))
             {
                 return INTERPRET_RUNTIME_ERROR;
             }

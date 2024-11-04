@@ -13,6 +13,7 @@ typedef enum
     OP_POP,
     OP_GET_PROPERTY,
     OP_SET_PROPERTY,
+    OP_GET_SUPER,
     OP_GET_LOCAL,
     OP_SET_LOCAL,
     OP_GET_UPVALUE,
@@ -40,6 +41,7 @@ typedef enum
     OP_RETURN,
     OP_CLASS,
     OP_METHOD,
+    OP_INHERIT,
 } OpCode;
 
 typedef struct

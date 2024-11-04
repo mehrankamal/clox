@@ -42,6 +42,7 @@ static ObjUpvalue *capture_upvalue(Value *local);
 static void close_upvalues(Value *last);
 static void define_method(ObjString *name);
 static bool bind_method(ObjClass *klass, ObjString *name);
+static bool invoke(ObjString *name, int arg_count);
 
 static InterpretResult run()
 {
@@ -335,6 +336,30 @@ static InterpretResult run()
         case OP_METHOD:
             define_method(READ_STRING());
             break;
+        case OP_INHERIT:
+        {
+            Value superclass = peek(1);
+            if (!IS_CLASS(superclass))
+            {
+                runtime_error("Superclass must be a class.");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+            ObjClass *subclass = AS_CLASS(peek(0));
+            table_add_all(&AS_CLASS(superclass)->methods, &subclass->methods);
+            pop();
+            break;
+        }
+        case OP_GET_SUPER:
+        {
+            ObjString *name = READ_STRING();
+            ObjClass *superclass = AS_CLASS(pop());
+
+            if (!bind_method(superclass, name))
+            {
+                return INTERPRET_RUNTIME_ERROR;
+            }
+            break;
+        }
         default:
             runtime_error("OP code %d is not implemented by the VM.", instruction);
             return INTERPRET_RUNTIME_ERROR;
@@ -513,7 +538,7 @@ static bool invoke(ObjString *name, int arg_count)
     ObjInstance *instance = AS_INSTANCE(receiver);
 
     Value value;
-    if (!table_get(&instance->fields, name, &value))
+    if (table_get(&instance->fields, name, &value))
     {
         vm.stack_top[-arg_count - 1] = value;
         return call_value(value, arg_count);

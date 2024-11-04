@@ -12,7 +12,6 @@
 
 static Obj *allocate_object(size_t size, ObjType type)
 {
-    printf("Allocate for %d\n", type);
     Obj *object = (Obj *)reallocate(NULL, 0, size);
     object->type = type;
     object->is_marked = false;

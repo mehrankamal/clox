@@ -632,8 +632,6 @@ static void concatenate()
     memcpy(chars + a->length, b->chars, b->length);
     chars[length] = '\0';
 
-    printf("%s", chars);
-
     ObjString *result = take_string(chars, length);
     pop();
     pop();

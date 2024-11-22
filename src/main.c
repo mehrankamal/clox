@@ -13,7 +13,7 @@ static void repl()
     for (;;)
     {
         printf("> ");
-        if (!fgets(line, sizeof(line), stdin))  
+        if (!fgets(line, sizeof(line), stdin))
         {
             printf("\n");
             break;
@@ -65,6 +65,15 @@ static void run_file(const char *path)
     if (result == INTERPRET_RUNTIME_ERROR)
         exit(70);
 }
+
+#ifdef TARGET_WASM
+void wasm_main()
+{
+    init_vm();
+    run_file("./input.lox");
+    free_vm();
+}
+#endif
 
 int main(int argc, char *argv[])
 {

@@ -12,13 +12,13 @@ cmake:
 
 wasm:
 	emcc src/* \
+		-o ./wasm-build/clox.js \
 		-Iinclude \
 		-DTARGET_WASM \
-		-o wasm-build/lox.js \
 		-s MODULARIZE=1 \
-		-s EXPORT_NAME='LoxModule' \
-		-s EXPORTED_RUNTIME_METHODS=['ccall','cwrap','FS'] \
+		-s EXPORT_ES6=1 \
+		--preload-file input.lox \
 		-s EXPORTED_FUNCTIONS=['_wasm_main'] \
-		-s NO_EXIT_RUNTIME=1 \
-		-s ENVIRONMENT=web \
-		--preload-file input.lox
+		-s EXPORTED_RUNTIME_METHODS=['ccall','cwrap','FS'] \
+		-s DEFAULT_LIBRARY_FUNCS_TO_INCLUDE=[] \
+		-s NO_FILESYSTEM=0
